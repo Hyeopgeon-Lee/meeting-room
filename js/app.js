@@ -1,4 +1,4 @@
-import * as api from './api.js';
+import * as api from './api.js?v=20260921';
 
 const rooms = ['8318', '8319'];
 
