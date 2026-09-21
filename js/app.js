@@ -1,4 +1,4 @@
-import * as api from './api.js?v=20260921';
+import * as api from './api.js?v=20260921-2';
 
 const rooms = ['8318', '8319'];
 
@@ -271,7 +271,7 @@ function book() {
 
 
       <p class="small">
-        운영시간 09:00–18:00 ·
+        운영시간 09:00–22:00 ·
         30분 단위 ·
         최대 3시간
       </p>
@@ -367,8 +367,10 @@ function book() {
 
             <input
               name="start"
-              type="time"
-              value="09:00"
+            type="time"
+            value="09:00"
+            min="09:00"
+            max="22:00"
               step="1800"
               required
             >
@@ -384,8 +386,10 @@ function book() {
 
             <input
               name="end"
-              type="time"
-              value="10:00"
+            type="time"
+            value="10:00"
+            min="09:00"
+            max="22:00"
               step="1800"
               required
             >

@@ -1,4 +1,4 @@
-const CONFIG={rooms:['8318','8319'],open:9,close:18,maxMinutes:180,tz:'Asia/Seoul',sheetName:'예약API'};
+const CONFIG={rooms:['8318','8319'],open:9,close:22,maxMinutes:180,tz:'Asia/Seoul',sheetName:'예약API'};
 const HEADERS=['예약번호','회의실','시작','종료','예약자','학번','용도','메모','PIN해시','상태','이벤트ID','생성일시','취소일시'];
 const PURPOSES=['학과 회의','수업/세미나','학생 모임','상담/면담','프로젝트','면접','기타'];
 function doGet(e){try{const a=e.parameter.action||'health';if(a==='getReservations')return out({ok:true,reservations:getReservations_(e.parameter.date)});if(a==='checkAvailability')return out(checkAvailability_(e.parameter));return out({ok:true,service:'meeting-room-api',rooms:CONFIG.rooms})}catch(err){return out({ok:false,error:err.message})}}
