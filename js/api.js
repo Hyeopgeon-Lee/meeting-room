@@ -1,4 +1,4 @@
-const API_BASE='https://script.google.com/macros/s/AKfycbzEno_7BI49EHiYc8dBZS_-9YrUiB9KUjgMNVX-Jw2O_gxwr5GnZw0yNzrrHuWU88ewDQ/exec';
+const API_BASE='https://script.google.com/macros/s/AKfycbz7aSZ8-uXqLgj4ZP3zB9m9YSdHyypQPod4fkdqK73nHBxTPckAREz1VwGDXDrLk2DVVQ/exec';
 async function read(res){const text=await res.text();let data;try{data=JSON.parse(text)}catch{throw new Error('서버 응답을 읽지 못했습니다.')}if(!res.ok||data.ok===false)throw new Error(data.error||'요청에 실패했습니다.');return data}
 export async function get(action,params={}){const u=new URL(API_BASE);u.searchParams.set('action',action);Object.entries(params).forEach(([k,v])=>u.searchParams.set(k,v));return read(await fetch(u,{headers:{Accept:'application/json'}}))}
 export async function post(action,payload={}){return read(await fetch(API_BASE,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8',Accept:'application/json'},body:JSON.stringify({action,...payload})}))}
