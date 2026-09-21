@@ -35,20 +35,13 @@ const state = {
       : '8318',
 
   date: today(),
-
   tab: 'status',
-
   rows: []
 };
 
 
 /*
  * 전체 화면 기본 구조
- *
- * 기존 코드에서는 template의 firstElementChild만 append해서
- * header만 DOM에 들어가고 main/nav가 사라지는 문제가 있었음.
- *
- * 따라서 #app.innerHTML에 전체 구조를 직접 넣는다.
  */
 function shell() {
   const app = document.querySelector('#app');
@@ -56,8 +49,15 @@ function shell() {
   app.innerHTML = `
     <header class="top">
       <div class="topin">
-        <div class="eyebrow">빅데이터학과</div>
-        <div class="brand">회의실 예약</div>
+
+        <div class="eyebrow">
+          빅데이터소프트웨어공학과
+        </div>
+
+        <div class="brand">
+          회의실 예약
+        </div>
+
       </div>
     </header>
 
@@ -83,12 +83,6 @@ function shell() {
   `;
 
 
-  /*
-   * 하단 메뉴 클릭
-   *
-   * 기존 코드의 render() 함수는 존재하지 않으므로
-   * 실제 화면을 다시 그리는 load()를 호출한다.
-   */
   document.querySelectorAll('[data-tab]').forEach(button => {
 
     button.onclick = async () => {
@@ -104,7 +98,7 @@ function shell() {
 
 
 /*
- * 오늘부터 5일 날짜 생성
+ * 오늘부터 5일간 날짜 생성
  */
 function dates() {
 
@@ -122,7 +116,7 @@ function dates() {
 
 
 /*
- * 예약 현황 화면
+ * 예약 현황
  */
 function status() {
 
@@ -143,7 +137,7 @@ function status() {
       </h1>
 
       <p>
-        8318·8319 회의실의 오늘 예약 현황을 확인할 수 있습니다.
+        8318·8319 회의실의 예약 현황을 확인하고 예약할 수 있습니다.
       </p>
 
     </section>
@@ -180,18 +174,16 @@ function status() {
           >
 
             <div class="roomtitle">
-              회의실 ${room}
+              ${room}호
             </div>
 
 
             <span class="tag">
-
               ${
                 room === state.primary
                   ? '현재 선택'
-                  : '예약 가능'
+                  : '다른 회의실'
               }
-
             </span>
 
 
@@ -238,9 +230,6 @@ function status() {
   `;
 
 
-  /*
-   * 날짜 변경
-   */
   document
     .querySelectorAll('[data-date]')
     .forEach(button => {
@@ -259,7 +248,7 @@ function status() {
 
 
 /*
- * 예약하기 화면
+ * 예약하기
  */
 function book() {
 
@@ -500,9 +489,6 @@ function book() {
   `;
 
 
-  /*
-   * 회의실 선택
-   */
   document
     .querySelectorAll('[data-room]')
     .forEach(button => {
@@ -624,7 +610,7 @@ async function submitBook(e) {
 
 
 /*
- * 내 예약 화면
+ * 내 예약
  */
 function mine() {
 
@@ -759,7 +745,7 @@ async function lookup(e) {
           <article class="card">
 
             <b>
-              ${item.room}
+              ${item.room}호
               ·
               ${item.start.slice(0, 10)}
             </b>
@@ -887,9 +873,6 @@ async function cancel(
     });
 
 
-    /*
-     * 취소 후 다시 조회
-     */
     const form =
       document.querySelector('#lookup');
 
@@ -918,19 +901,13 @@ async function cancel(
 
 
 /*
- * 전체 화면 로드
+ * 화면 전체 로드
  */
 async function load() {
 
-  /*
-   * header / main / nav 생성
-   */
   shell();
 
 
-  /*
-   * 현재 탭 표시
-   */
   document
     .querySelectorAll('[data-tab]')
     .forEach(button => {
@@ -943,9 +920,6 @@ async function load() {
     });
 
 
-  /*
-   * 예약현황
-   */
   if (state.tab === 'status') {
 
     try {
@@ -977,9 +951,6 @@ async function load() {
   }
 
 
-  /*
-   * 예약하기
-   */
   else if (
     state.tab === 'book'
   ) {
@@ -989,9 +960,6 @@ async function load() {
   }
 
 
-  /*
-   * 내 예약
-   */
   else {
 
     mine();
@@ -999,10 +967,6 @@ async function load() {
   }
 
 
-  /*
-   * 화면을 그린 뒤에도
-   * 현재 메뉴 active 유지
-   */
   document
     .querySelectorAll('[data-tab]')
     .forEach(button => {
