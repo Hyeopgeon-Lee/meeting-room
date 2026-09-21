@@ -1,16 +1,1023 @@
 import * as api from './api.js';
-const rooms=['8318','8319'], purposes=['학과 회의','수업/세미나','학생 모임','상담/면담','프로젝트','면접','기타'];
-const pad=n=>String(n).padStart(2,'0'), today=()=>{const d=new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`};
-const fmt=d=>new Intl.DateTimeFormat('ko-KR',{month:'long',day:'numeric',weekday:'short'}).format(new Date(`${d}T00:00:00`));
-const state={primary:new URLSearchParams(location.search).get('room')==='8319'?'8319':'8318',date:today(),tab:'status',rows:[]};
-const el=html=>{const t=document.createElement('template');t.innerHTML=html.trim();return t.content.firstElementChild};
-function shell(){document.querySelector('#app').innerHTML='';document.querySelector('#app').append(el(`<header class="top"><div class="topin"><div class="eyebrow">빅데이터학과</div><div class="brand">회의실 예약</div></div></header><main class="main"></main><nav class="nav"><div class="navin"><button data-tab="status">현황</button><button data-tab="book">예약하기</button><button data-tab="mine">내 예약</button></div></nav>`));document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{state.tab=b.dataset.tab;render()})}
-function dates(){return [0,1,2,3,4].map(i=>{const d=new Date();d.setDate(d.getDate()+i);return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`})}
-function status(){const main=document.querySelector('.main');main.innerHTML=`<section class="card hero"><h1>회의실을 간편하게 예약하세요</h1><p>8318·8319 회의실의 오늘 예약 현황을 확인할 수 있습니다.</p></section><div class="datebar">${dates().map(d=>`<button class="datebtn ${d===state.date?'active':''}" data-date="${d}">${fmt(d)}</button>`).join('')}</div><div class="roomgrid">${rooms.map(r=>{const rows=state.rows.filter(x=>x.room===r);return `<article class="roomcard ${r===state.primary?'primary':''}"><div class="roomtitle">회의실 ${r}</div><span class="tag">${r===state.primary?'현재 선택':'예약 가능'}</span><div class="schedule">${rows.length?rows.map(x=>`<div class="slot"><span class="time">${x.start.slice(11,16)}–${x.end.slice(11,16)}</span><span>${x.name||'예약됨'}</span></div>`).join(''):'<div class="empty">예약 없음</div>'}</div></article>`}).join('')}</div>`;document.querySelectorAll('[data-date]').forEach(b=>b.onclick=async()=>{state.date=b.dataset.date;await load()})}
-function book(){const main=document.querySelector('.main');main.innerHTML=`<section class="card"><h2>예약하기</h2><p class="small">운영시간 09:00–18:00 · 30분 단위 · 최대 3시간</p><form id="form"><div class="field"><label>회의실</label><div class="datebar">${rooms.map(r=>`<button type="button" class="roombtn ${r===state.primary?'active':''}" data-room="${r}">${r}</button>`).join('')}</div><input type="hidden" name="room" value="${state.primary}"></div><div class="twocol"><div class="field"><label>날짜</label><input name="date" type="date" value="${state.date}" required></div><div class="field"><label>용도</label><select name="purpose">${purposes.map(p=>`<option>${p}</option>`).join('')}</select></div></div><div class="twocol"><div class="field"><label>시작</label><input name="start" type="time" value="09:00" step="1800" required></div><div class="field"><label>종료</label><input name="end" type="time" value="10:00" step="1800" required></div></div><div class="field"><label>예약자 이름</label><input name="name" maxlength="30" required></div><div class="field"><label>학번</label><input name="studentId" inputmode="numeric" maxlength="20" required></div><div class="field"><label>메모 (선택)</label><textarea name="memo" maxlength="200"></textarea></div><div class="field"><label>취소용 4자리 PIN</label><input name="pin" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" required></div><label class="small"><input type="checkbox" required> 예약 정보를 확인했습니다.</label><p><button class="primarybtn">예약 등록</button></p></form><div id="bookResult"></div></section>`;document.querySelectorAll('[data-room]').forEach(b=>b.onclick=()=>{document.querySelector('[name=room]').value=b.dataset.room;document.querySelectorAll('[data-room]').forEach(x=>x.classList.toggle('active',x===b))});document.querySelector('#form').onsubmit=submitBook}
-async function submitBook(e){e.preventDefault();const f=new FormData(e.target),data=Object.fromEntries(f);const out=document.querySelector('#bookResult');out.innerHTML='<p class="small">예약 가능 여부를 확인하고 있습니다…</p>';try{const r=await api.createReservation(data);out.innerHTML=`<div class="result"><b>예약이 완료되었습니다.</b><p>예약번호: <strong>${r.reservationId}</strong></p><p class="small">예약번호와 학번, PIN으로 내 예약에서 취소할 수 있습니다.</p></div>`;e.target.reset()}catch(err){out.innerHTML=`<p class="danger">${err.message}</p>`}}
-function mine(){const main=document.querySelector('.main');main.innerHTML=`<section class="card"><h2>내 예약</h2><p class="small">예약할 때 입력한 학번과 PIN을 입력하세요.</p><form id="lookup"><div class="field"><label>학번</label><input name="studentId" required></div><div class="field"><label>4자리 PIN</label><input name="pin" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" required></div><button class="primarybtn">조회</button></form><div id="mineResult"></div></section>`;document.querySelector('#lookup').onsubmit=lookup}
-async function lookup(e){e.preventDefault();const f=new FormData(e.target),out=document.querySelector('#mineResult');try{const r=await api.findReservation(f.get('studentId'),f.get('pin'));out.innerHTML=r.reservations?.length?r.reservations.map(x=>`<article class="card"><b>${x.room} · ${x.start.slice(0,10)}</b><p>${x.start.slice(11,16)}–${x.end.slice(11,16)} · ${x.purpose}</p><p class="small">${x.memo||''}</p>${x.status==='ACTIVE'?`<button class="secondary danger" data-cancel="${x.reservationId}">예약 취소</button>`:'<span class="small">취소됨</span>'}</article>`).join(''):'<p class="empty">예약 내역이 없습니다.</p>';document.querySelectorAll('[data-cancel]').forEach(b=>b.onclick=()=>cancel(b.dataset.cancel,f.get('studentId'),f.get('pin')))}catch(err){out.innerHTML=`<p class="danger">${err.message}</p>`}}
-async function cancel(id,studentId,pin){if(!confirm('이 예약을 취소할까요?'))return;try{await api.cancelReservation({reservationId:id,studentId,pin});await lookup({preventDefault(){},target:document.querySelector('#lookup')})}catch(e){alert(e.message)}}
-async function load(){shell();document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===state.tab));if(state.tab==='status'){try{const r=await api.reservations(state.date);state.rows=r.reservations||[]}catch(e){state.rows=[]}status()}else if(state.tab==='book')book();else mine();document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===state.tab))}
+
+const rooms = ['8318', '8319'];
+
+const purposes = [
+  '학과 회의',
+  '수업/세미나',
+  '학생 모임',
+  '상담/면담',
+  '프로젝트',
+  '면접',
+  '기타'
+];
+
+const pad = n => String(n).padStart(2, '0');
+
+const today = () => {
+  const d = new Date();
+
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+};
+
+const fmt = d => {
+  return new Intl.DateTimeFormat('ko-KR', {
+    month: 'long',
+    day: 'numeric',
+    weekday: 'short'
+  }).format(new Date(`${d}T00:00:00`));
+};
+
+const state = {
+  primary:
+    new URLSearchParams(location.search).get('room') === '8319'
+      ? '8319'
+      : '8318',
+
+  date: today(),
+
+  tab: 'status',
+
+  rows: []
+};
+
+
+/*
+ * 전체 화면 기본 구조
+ *
+ * 기존 코드에서는 template의 firstElementChild만 append해서
+ * header만 DOM에 들어가고 main/nav가 사라지는 문제가 있었음.
+ *
+ * 따라서 #app.innerHTML에 전체 구조를 직접 넣는다.
+ */
+function shell() {
+  const app = document.querySelector('#app');
+
+  app.innerHTML = `
+    <header class="top">
+      <div class="topin">
+        <div class="eyebrow">빅데이터학과</div>
+        <div class="brand">회의실 예약</div>
+      </div>
+    </header>
+
+    <main class="main"></main>
+
+    <nav class="nav">
+      <div class="navin">
+
+        <button data-tab="status">
+          현황
+        </button>
+
+        <button data-tab="book">
+          예약하기
+        </button>
+
+        <button data-tab="mine">
+          내 예약
+        </button>
+
+      </div>
+    </nav>
+  `;
+
+
+  /*
+   * 하단 메뉴 클릭
+   *
+   * 기존 코드의 render() 함수는 존재하지 않으므로
+   * 실제 화면을 다시 그리는 load()를 호출한다.
+   */
+  document.querySelectorAll('[data-tab]').forEach(button => {
+
+    button.onclick = async () => {
+
+      state.tab = button.dataset.tab;
+
+      await load();
+
+    };
+
+  });
+}
+
+
+/*
+ * 오늘부터 5일 날짜 생성
+ */
+function dates() {
+
+  return [0, 1, 2, 3, 4].map(i => {
+
+    const d = new Date();
+
+    d.setDate(d.getDate() + i);
+
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+
+  });
+
+}
+
+
+/*
+ * 예약 현황 화면
+ */
+function status() {
+
+  const main = document.querySelector('.main');
+
+  if (!main) {
+    console.error('.main 요소를 찾을 수 없습니다.');
+    return;
+  }
+
+
+  main.innerHTML = `
+
+    <section class="card hero">
+
+      <h1>
+        회의실을 간편하게 예약하세요
+      </h1>
+
+      <p>
+        8318·8319 회의실의 오늘 예약 현황을 확인할 수 있습니다.
+      </p>
+
+    </section>
+
+
+    <div class="datebar">
+
+      ${dates().map(d => `
+
+        <button
+          class="datebtn ${d === state.date ? 'active' : ''}"
+          data-date="${d}"
+        >
+          ${fmt(d)}
+        </button>
+
+      `).join('')}
+
+    </div>
+
+
+    <div class="roomgrid">
+
+      ${rooms.map(room => {
+
+        const rows = state.rows.filter(
+          item => item.room === room
+        );
+
+        return `
+
+          <article
+            class="roomcard ${room === state.primary ? 'primary' : ''}"
+          >
+
+            <div class="roomtitle">
+              회의실 ${room}
+            </div>
+
+
+            <span class="tag">
+
+              ${
+                room === state.primary
+                  ? '현재 선택'
+                  : '예약 가능'
+              }
+
+            </span>
+
+
+            <div class="schedule">
+
+              ${
+                rows.length
+
+                  ? rows.map(item => `
+
+                      <div class="slot">
+
+                        <span class="time">
+                          ${item.start.slice(11, 16)}
+                          –
+                          ${item.end.slice(11, 16)}
+                        </span>
+
+                        <span>
+                          ${item.name || '예약됨'}
+                        </span>
+
+                      </div>
+
+                    `).join('')
+
+                  : `
+                      <div class="empty">
+                        예약 없음
+                      </div>
+                    `
+              }
+
+            </div>
+
+          </article>
+
+        `;
+
+      }).join('')}
+
+    </div>
+
+  `;
+
+
+  /*
+   * 날짜 변경
+   */
+  document
+    .querySelectorAll('[data-date]')
+    .forEach(button => {
+
+      button.onclick = async () => {
+
+        state.date = button.dataset.date;
+
+        await load();
+
+      };
+
+    });
+
+}
+
+
+/*
+ * 예약하기 화면
+ */
+function book() {
+
+  const main = document.querySelector('.main');
+
+  if (!main) {
+    console.error('.main 요소를 찾을 수 없습니다.');
+    return;
+  }
+
+
+  main.innerHTML = `
+
+    <section class="card">
+
+      <h2>
+        예약하기
+      </h2>
+
+
+      <p class="small">
+        운영시간 09:00–18:00 ·
+        30분 단위 ·
+        최대 3시간
+      </p>
+
+
+      <form id="form">
+
+
+        <div class="field">
+
+          <label>
+            회의실
+          </label>
+
+
+          <div class="datebar">
+
+            ${rooms.map(room => `
+
+              <button
+                type="button"
+                class="roombtn ${room === state.primary ? 'active' : ''}"
+                data-room="${room}"
+              >
+                ${room}
+              </button>
+
+            `).join('')}
+
+          </div>
+
+
+          <input
+            type="hidden"
+            name="room"
+            value="${state.primary}"
+          >
+
+        </div>
+
+
+        <div class="twocol">
+
+
+          <div class="field">
+
+            <label>
+              날짜
+            </label>
+
+            <input
+              name="date"
+              type="date"
+              value="${state.date}"
+              required
+            >
+
+          </div>
+
+
+          <div class="field">
+
+            <label>
+              용도
+            </label>
+
+            <select name="purpose">
+
+              ${purposes.map(purpose => `
+
+                <option>
+                  ${purpose}
+                </option>
+
+              `).join('')}
+
+            </select>
+
+          </div>
+
+
+        </div>
+
+
+        <div class="twocol">
+
+
+          <div class="field">
+
+            <label>
+              시작
+            </label>
+
+            <input
+              name="start"
+              type="time"
+              value="09:00"
+              step="1800"
+              required
+            >
+
+          </div>
+
+
+          <div class="field">
+
+            <label>
+              종료
+            </label>
+
+            <input
+              name="end"
+              type="time"
+              value="10:00"
+              step="1800"
+              required
+            >
+
+          </div>
+
+
+        </div>
+
+
+        <div class="field">
+
+          <label>
+            예약자 이름
+          </label>
+
+          <input
+            name="name"
+            maxlength="30"
+            required
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label>
+            학번
+          </label>
+
+          <input
+            name="studentId"
+            inputmode="numeric"
+            maxlength="20"
+            required
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label>
+            메모 (선택)
+          </label>
+
+          <textarea
+            name="memo"
+            maxlength="200"
+          ></textarea>
+
+        </div>
+
+
+        <div class="field">
+
+          <label>
+            취소용 4자리 PIN
+          </label>
+
+          <input
+            name="pin"
+            inputmode="numeric"
+            pattern="[0-9]{4}"
+            maxlength="4"
+            required
+          >
+
+        </div>
+
+
+        <label class="small">
+
+          <input
+            type="checkbox"
+            required
+          >
+
+          예약 정보를 확인했습니다.
+
+        </label>
+
+
+        <p>
+
+          <button class="primarybtn">
+            예약 등록
+          </button>
+
+        </p>
+
+
+      </form>
+
+
+      <div id="bookResult"></div>
+
+
+    </section>
+
+  `;
+
+
+  /*
+   * 회의실 선택
+   */
+  document
+    .querySelectorAll('[data-room]')
+    .forEach(button => {
+
+      button.onclick = () => {
+
+        const roomInput =
+          document.querySelector('[name="room"]');
+
+        if (roomInput) {
+          roomInput.value = button.dataset.room;
+        }
+
+
+        document
+          .querySelectorAll('[data-room]')
+          .forEach(item => {
+
+            item.classList.toggle(
+              'active',
+              item === button
+            );
+
+          });
+
+      };
+
+    });
+
+
+  const form =
+    document.querySelector('#form');
+
+  if (form) {
+    form.onsubmit = submitBook;
+  }
+
+}
+
+
+/*
+ * 예약 등록
+ */
+async function submitBook(e) {
+
+  e.preventDefault();
+
+
+  const formData =
+    new FormData(e.target);
+
+
+  const data =
+    Object.fromEntries(formData);
+
+
+  const out =
+    document.querySelector('#bookResult');
+
+
+  out.innerHTML = `
+
+    <p class="small">
+      예약 가능 여부를 확인하고 있습니다…
+    </p>
+
+  `;
+
+
+  try {
+
+    const result =
+      await api.createReservation(data);
+
+
+    out.innerHTML = `
+
+      <div class="result">
+
+        <b>
+          예약이 완료되었습니다.
+        </b>
+
+        <p>
+          예약번호:
+          <strong>
+            ${result.reservationId}
+          </strong>
+        </p>
+
+        <p class="small">
+          예약번호와 학번, PIN으로
+          내 예약에서 취소할 수 있습니다.
+        </p>
+
+      </div>
+
+    `;
+
+
+    e.target.reset();
+
+  } catch (err) {
+
+    console.error(err);
+
+
+    out.innerHTML = `
+
+      <p class="danger">
+        ${err.message}
+      </p>
+
+    `;
+
+  }
+
+}
+
+
+/*
+ * 내 예약 화면
+ */
+function mine() {
+
+  const main =
+    document.querySelector('.main');
+
+
+  if (!main) {
+
+    console.error(
+      '.main 요소를 찾을 수 없습니다.'
+    );
+
+    return;
+
+  }
+
+
+  main.innerHTML = `
+
+    <section class="card">
+
+      <h2>
+        내 예약
+      </h2>
+
+
+      <p class="small">
+        예약할 때 입력한 학번과 PIN을 입력하세요.
+      </p>
+
+
+      <form id="lookup">
+
+
+        <div class="field">
+
+          <label>
+            학번
+          </label>
+
+          <input
+            name="studentId"
+            required
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label>
+            4자리 PIN
+          </label>
+
+          <input
+            name="pin"
+            inputmode="numeric"
+            pattern="[0-9]{4}"
+            maxlength="4"
+            required
+          >
+
+        </div>
+
+
+        <button class="primarybtn">
+          조회
+        </button>
+
+
+      </form>
+
+
+      <div id="mineResult"></div>
+
+
+    </section>
+
+  `;
+
+
+  const lookupForm =
+    document.querySelector('#lookup');
+
+
+  if (lookupForm) {
+    lookupForm.onsubmit = lookup;
+  }
+
+}
+
+
+/*
+ * 내 예약 조회
+ */
+async function lookup(e) {
+
+  e.preventDefault();
+
+
+  const formData =
+    new FormData(e.target);
+
+
+  const studentId =
+    formData.get('studentId');
+
+
+  const pin =
+    formData.get('pin');
+
+
+  const out =
+    document.querySelector('#mineResult');
+
+
+  try {
+
+    const result =
+      await api.findReservation(
+        studentId,
+        pin
+      );
+
+
+    if (result.reservations?.length) {
+
+      out.innerHTML =
+        result.reservations.map(item => `
+
+          <article class="card">
+
+            <b>
+              ${item.room}
+              ·
+              ${item.start.slice(0, 10)}
+            </b>
+
+
+            <p>
+
+              ${item.start.slice(11, 16)}
+              –
+              ${item.end.slice(11, 16)}
+
+              ·
+
+              ${item.purpose}
+
+            </p>
+
+
+            <p class="small">
+              ${item.memo || ''}
+            </p>
+
+
+            ${
+              item.status === 'ACTIVE'
+
+                ? `
+
+                    <button
+                      class="secondary danger"
+                      data-cancel="${item.reservationId}"
+                    >
+                      예약 취소
+                    </button>
+
+                  `
+
+                : `
+
+                    <span class="small">
+                      취소됨
+                    </span>
+
+                  `
+            }
+
+
+          </article>
+
+        `).join('');
+
+
+      document
+        .querySelectorAll('[data-cancel]')
+        .forEach(button => {
+
+          button.onclick = () => {
+
+            cancel(
+              button.dataset.cancel,
+              studentId,
+              pin
+            );
+
+          };
+
+        });
+
+    } else {
+
+      out.innerHTML = `
+
+        <p class="empty">
+          예약 내역이 없습니다.
+        </p>
+
+      `;
+
+    }
+
+  } catch (err) {
+
+    console.error(err);
+
+
+    out.innerHTML = `
+
+      <p class="danger">
+        ${err.message}
+      </p>
+
+    `;
+
+  }
+
+}
+
+
+/*
+ * 예약 취소
+ */
+async function cancel(
+  reservationId,
+  studentId,
+  pin
+) {
+
+  if (
+    !confirm(
+      '이 예약을 취소할까요?'
+    )
+  ) {
+    return;
+  }
+
+
+  try {
+
+    await api.cancelReservation({
+
+      reservationId,
+      studentId,
+      pin
+
+    });
+
+
+    /*
+     * 취소 후 다시 조회
+     */
+    const form =
+      document.querySelector('#lookup');
+
+
+    if (form) {
+
+      await lookup({
+
+        preventDefault() {},
+
+        target: form
+
+      });
+
+    }
+
+  } catch (err) {
+
+    console.error(err);
+
+    alert(err.message);
+
+  }
+
+}
+
+
+/*
+ * 전체 화면 로드
+ */
+async function load() {
+
+  /*
+   * header / main / nav 생성
+   */
+  shell();
+
+
+  /*
+   * 현재 탭 표시
+   */
+  document
+    .querySelectorAll('[data-tab]')
+    .forEach(button => {
+
+      button.classList.toggle(
+        'active',
+        button.dataset.tab === state.tab
+      );
+
+    });
+
+
+  /*
+   * 예약현황
+   */
+  if (state.tab === 'status') {
+
+    try {
+
+      const result =
+        await api.reservations(
+          state.date
+        );
+
+
+      state.rows =
+        result.reservations || [];
+
+    } catch (err) {
+
+      console.error(
+        '예약현황 조회 실패:',
+        err
+      );
+
+
+      state.rows = [];
+
+    }
+
+
+    status();
+
+  }
+
+
+  /*
+   * 예약하기
+   */
+  else if (
+    state.tab === 'book'
+  ) {
+
+    book();
+
+  }
+
+
+  /*
+   * 내 예약
+   */
+  else {
+
+    mine();
+
+  }
+
+
+  /*
+   * 화면을 그린 뒤에도
+   * 현재 메뉴 active 유지
+   */
+  document
+    .querySelectorAll('[data-tab]')
+    .forEach(button => {
+
+      button.classList.toggle(
+        'active',
+        button.dataset.tab === state.tab
+      );
+
+    });
+
+}
+
+
+/*
+ * 최초 실행
+ */
 load();
