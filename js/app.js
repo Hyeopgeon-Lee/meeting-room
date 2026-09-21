@@ -56,7 +56,7 @@ function shell() {
         </div>
 
         <div class="brand">
-          회의실 예약
+          프로젝트실 예약
         </div>
 
       </div>
@@ -134,11 +134,11 @@ function status() {
     <section class="card hero">
 
       <h1>
-        회의실을 간편하게 예약하세요
+        프로젝트실을 간편하게 예약하세요
       </h1>
 
       <p>
-        8318·8319 회의실의 예약 현황을 확인하고 예약할 수 있습니다.
+        8318·8319 프로젝트실의 예약 현황을 확인하고 예약할 수 있습니다.
       </p>
 
     </section>
@@ -175,7 +175,7 @@ function status() {
             data-room="${room}"
             role="button"
             tabindex="0"
-            aria-label="회의실 ${room} 예약하기"
+            aria-label="프로젝트실 ${room} 예약하기"
           >
 
             <div class="roomtitle">
@@ -187,7 +187,7 @@ function status() {
               ${
                 room === state.primary
                   ? '현재 선택'
-                  : '다른 회의실'
+                  : '다른 프로젝트실'
               }
             </span>
 
@@ -305,7 +305,7 @@ function book() {
         <div class="field">
 
           <label>
-            회의실
+            프로젝트실
           </label>
 
 
@@ -962,7 +962,7 @@ async function load() {
     const main = document.querySelector('.main');
     main.innerHTML = `
       <section class="card hero">
-        <h1>회의실 예약 현황</h1>
+        <h1>프로젝트실 예약 현황</h1>
         <p>예약 현황을 불러오는 중입니다…</p>
       </section>
     `;
