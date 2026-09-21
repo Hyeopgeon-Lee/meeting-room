@@ -36,7 +36,8 @@ const state = {
 
   date: today(),
   tab: 'status',
-  rows: []
+  rows: [],
+  loadVersion: 0
 };
 
 
@@ -905,6 +906,8 @@ async function cancel(
  */
 async function load() {
 
+  const version = ++state.loadVersion;
+
   shell();
 
 
@@ -921,6 +924,14 @@ async function load() {
 
 
   if (state.tab === 'status') {
+
+    const main = document.querySelector('.main');
+    main.innerHTML = `
+      <section class="card hero">
+        <h1>회의실 예약 현황</h1>
+        <p>예약 현황을 불러오는 중입니다…</p>
+      </section>
+    `;
 
     try {
 
@@ -944,6 +955,8 @@ async function load() {
       state.rows = [];
 
     }
+
+    if (version !== state.loadVersion || state.tab !== 'status') return;
 
 
     status();
