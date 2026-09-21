@@ -172,6 +172,10 @@ function status() {
 
           <article
             class="roomcard ${room === state.primary ? 'primary' : ''}"
+            data-room="${room}"
+            role="button"
+            tabindex="0"
+            aria-label="회의실 ${room} 예약하기"
           >
 
             <div class="roomtitle">
@@ -231,8 +235,8 @@ function status() {
   `;
 
 
-  document
-    .querySelectorAll('[data-date]')
+    document
+      .querySelectorAll('[data-date]')
     .forEach(button => {
 
       button.onclick = async () => {
@@ -243,6 +247,24 @@ function status() {
 
       };
 
+    });
+
+  document
+    .querySelectorAll('[data-room]')
+    .forEach(card => {
+      const openBooking = async () => {
+        state.primary = card.dataset.room;
+        state.tab = 'book';
+        await load();
+      };
+
+      card.onclick = openBooking;
+      card.onkeydown = event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          openBooking();
+        }
+      };
     });
 
 }
