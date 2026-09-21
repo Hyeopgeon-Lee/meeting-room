@@ -1,4 +1,4 @@
-import * as api from './api.js?v=20260921-2';
+import * as api from './api.js?v=20260921-3';
 
 const rooms = ['8318', '8319'];
 
@@ -541,6 +541,10 @@ async function submitBook(e) {
 
   e.preventDefault();
 
+  const submitButton = e.target.querySelector('button[type="submit"], button');
+  if (submitButton?.disabled) return;
+  if (submitButton) submitButton.disabled = true;
+
 
   const formData =
     new FormData(e.target);
@@ -608,6 +612,10 @@ async function submitBook(e) {
       </p>
 
     `;
+
+  } finally {
+
+    if (submitButton) submitButton.disabled = false;
 
   }
 
