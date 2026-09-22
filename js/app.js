@@ -34,6 +34,13 @@ const fmt = d => {
   }).format(new Date(`${d}T00:00:00`));
 };
 
+const fmtTime = value => new Intl.DateTimeFormat('en-GB', {
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: false,
+  timeZone: 'Asia/Seoul'
+}).format(new Date(value));
+
 const state = {
   primary:
     new URLSearchParams(location.search).get('room') === '8319'
@@ -208,9 +215,9 @@ function status() {
                       <div class="slot">
 
                         <span class="time">
-                          ${item.start.slice(11, 16)}
+                          ${fmtTime(item.start)}
                           –
-                          ${item.end.slice(11, 16)}
+                          ${fmtTime(item.end)}
                         </span>
 
                         <span class="reservation-name" title="예약자 이름">
@@ -795,9 +802,9 @@ async function lookup(e) {
 
             <p>
 
-              ${item.start.slice(11, 16)}
+              ${fmtTime(item.start)}
               –
-              ${item.end.slice(11, 16)}
+              ${fmtTime(item.end)}
 
               ·
 
