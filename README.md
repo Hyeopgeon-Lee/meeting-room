@@ -15,7 +15,7 @@ GitHub Pages 정적 프론트엔드와 Google Apps Script JSON API를 연결한 
 - `js/app.js`, `css/style.css`: 현황·예약·내 예약 화면
 - `apps-script/Code.gs`: 서버 검증, 중복 예약 잠금, Calendar/Sheets 저장
 
-Apps Script 프로젝트의 Script Properties에 `SHEET_ID`를 설정하고 `initializeSystem`을 한 번 실행한 뒤, 웹 앱을 새 버전으로 배포합니다. 현재 API 배포 주소는 `https://script.google.com/macros/s/AKfycbyKtdxDIbQWbYGlyL8ywx2yAxoH-hjA0P2E7_MCM1QH9OuiLsmHr8nNrT8lmVbcaJ49VQ/exec`입니다. API는 `getReservations`, `checkAvailability`, `createReservation`, `findReservation`, `cancelReservation`을 제공합니다. 예약 원장은 `예약API` 시트에 `예약번호, 프로젝트실, 시작, 종료, 예약자, 학번, 용도, 메모, PIN해시, 상태, 이벤트ID, 생성일시, 취소일시` 순서로 저장됩니다.
+Apps Script 프로젝트의 Script Properties에 `SHEET_ID`를 설정하고 `initializeSystem`을 한 번 실행한 뒤, 웹 앱을 새 버전으로 배포합니다. 현재 API 배포 주소는 `https://script.google.com/macros/s/AKfycbxyQB19x1W4nrUAKnBV5lnKaChcd95RFquNVjFW0gH-s5mL0V4G58aA59phZ6wqCWY2fw/exec`입니다. API는 `getReservations`, `checkAvailability`, `createReservation`, `findReservation`, `cancelReservation`을 제공합니다. 예약 원장은 `예약API` 시트에 `예약번호, 프로젝트실, 시작, 종료, 예약자, 학번, 용도, 메모, PIN해시, 상태, 이벤트ID, 생성일시, 취소일시` 순서로 저장됩니다.
 
 ## GitHub Pages
 

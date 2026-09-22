@@ -436,7 +436,8 @@ function book() {
 
           <input
             name="name"
-            maxlength="30"
+            maxlength="3"
+            minlength="1"
             required
           >
 
