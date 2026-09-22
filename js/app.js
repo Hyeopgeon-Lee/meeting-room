@@ -14,6 +14,12 @@ const purposes = [
 
 const pad = n => String(n).padStart(2, '0');
 
+const shortName = value => {
+  const name = String(value || '예약됨');
+  const chars = [...name];
+  return chars.length > 3 ? `${chars.slice(0, 3).join('')}...` : name;
+};
+
 const today = () => {
   const d = new Date();
 
@@ -208,7 +214,7 @@ function status() {
                         </span>
 
                         <span class="reservation-name" title="예약자 이름">
-                          ${item.name || '예약됨'}
+                          ${shortName(item.name)}
                         </span>
 
                       </div>
