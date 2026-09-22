@@ -207,7 +207,7 @@ function status() {
                           ${item.end.slice(11, 16)}
                         </span>
 
-                        <span>
+                        <span class="reservation-name" title="예약자 이름">
                           ${item.name || '예약됨'}
                         </span>
 
