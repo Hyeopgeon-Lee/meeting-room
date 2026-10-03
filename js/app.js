@@ -12,6 +12,11 @@ const purposes = [
   '기타'
 ];
 
+const purposeLabels = {'학과 회의':'학과 행사 준비','수업/세미나':'수업 · 교육 · 세미나','학생 모임':'스터디 · 학습','상담/면담':'학생 상담 · 면담','프로젝트':'프로젝트 · 팀 회의','면접':'발표 · 면접 연습','기타':'기타 학과 업무'};
+const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const icon = name => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ({room:'<rect x="4" y="5" width="16" height="16" rx="3"/><path d="M8 3v4m8-4v4M4 11h16m-11 4h2m3 0h2m-7 3h2"/>',book:'<path d="M12 5v14M5 12h14"/><rect x="3" y="3" width="18" height="18" rx="4"/>',mine:'<circle cx="12" cy="8" r="3"/><path d="M5 21v-3a7 7 0 0 1 14 0v3"/>',info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10h.01"/>'}[name] || '') + '</svg>';
+const notice = () => '<aside class="notice">' + icon('info') + '<div><strong>이용 안내</strong><p>학과 학생만 이용할 수 있습니다.<br>식사 및 음료 섭취 목적의 예약은 할 수 없습니다.</p></div></aside>';
+const stateCard = (title, text, kind='empty') => '<div class="state-card '+kind+'" role="status">'+(kind==='loading'?'<span class="spinner" aria-hidden="true"></span>':icon('info'))+'<strong>'+escapeHtml(title)+'</strong><p>'+escapeHtml(text)+'</p></div>';
 const pad = n => String(n).padStart(2, '0');
 
 const shortName = value => {
@@ -61,39 +66,18 @@ function shell() {
   const app = document.querySelector('#app');
 
   app.innerHTML = `
-    <header class="top">
-      <div class="topin">
-
-        <div class="eyebrow">
-          빅데이터소프트웨어공학과
-        </div>
-
-        <div class="brand">
-          프로젝트실 예약
-        </div>
-
-      </div>
-    </header>
-
-    <main class="main"></main>
-
-    <nav class="nav">
-      <div class="navin">
-
-        <button data-tab="status">
-          현황
-        </button>
-
-        <button data-tab="book">
-          예약하기
-        </button>
-
-        <button data-tab="mine">
-          내 예약
-        </button>
-
-      </div>
-    </nav>
+    <a class="skip-link" href="#main">본문으로 건너뛰기</a>
+    <header class="top"><div class="topin">
+      <a class="portal-link" href="https://portal.k-bigdata.kr/">← 통합 서비스 포털</a>
+      <div class="brand-row"><span class="brand-icon">${icon('room')}</span><div><div class="eyebrow">빅데이터소프트웨어공학과</div><h1 class="brand">프로젝트실 예약</h1></div></div>
+      <p class="header-description">8318 · 8319 프로젝트실 예약 및 이용 현황</p>
+    </div></header>
+    <main class="main" id="main"></main>
+    <nav class="nav" aria-label="프로젝트실 메뉴"><div class="navin">
+      <button data-tab="status">${icon('room')}<span>현황</span></button>
+      <button data-tab="book">${icon('book')}<span>예약하기</span></button>
+      <button data-tab="mine">${icon('mine')}<span>내 예약</span></button>
+    </div></nav>
   `;
 
 
@@ -144,28 +128,17 @@ function status() {
 
   main.innerHTML = `
 
-    <section class="card hero">
-
-      <h1>
-        프로젝트실을 간편하게 예약하세요
-      </h1>
-
-      <p>
-        8318·8319 프로젝트실의 예약 현황을 확인하고 예약할 수 있습니다.
-      </p>
-
-    </section>
-
-
+    <section class="card hero"><div class="section-eyebrow">PROJECT ROOM</div><h2>함께 배우는 공간, 프로젝트실</h2><p>예약 현황을 확인하고 원하는 프로젝트실을 선택하세요.</p><div class="badges"><span>학과 학생 전용</span><span>음식물 섭취 불가</span></div></section>
+    <div class="section-heading"><h2>예약 현황</h2><span class="small">09:00–22:00</span></div>
     <div class="datebar">
 
       ${dates().map(d => `
 
         <button
           class="datebtn ${d === state.date ? 'active' : ''}"
-          data-date="${d}"
+          aria-pressed="${d === state.date}" data-date="${d}"
         >
-          ${fmt(d)}
+          ${fmt(d)}${d === today() ? '<small>오늘</small>' : ''}
         </button>
 
       `).join('')}
@@ -183,24 +156,24 @@ function status() {
 
         return `
 
-          <article
+          <button type="button"
             class="roomcard ${room === state.primary ? 'primary' : ''}"
             data-room="${room}"
-            role="button"
-            tabindex="0"
+
+
             aria-label="프로젝트실 ${room} 예약하기"
           >
 
             <div class="roomtitle">
-              ${room}호
+              ${icon('room')}<span>${room}<small>프로젝트실</small></span>
             </div>
 
 
             <span class="tag">
               ${
                 room === state.primary
-                  ? '현재 선택'
-                  : '다른 프로젝트실'
+                  ? '선택됨'
+                  : '예약하기 →'
               }
             </span>
 
@@ -221,7 +194,7 @@ function status() {
                         </span>
 
                         <span class="reservation-name" title="예약자 이름">
-                          ${shortName(item.name)}
+                          ${escapeHtml(shortName(item.name))}<small class="purpose">${escapeHtml(purposeLabels[item.purpose] || item.purpose)}</small>
                         </span>
 
                       </div>
@@ -230,21 +203,21 @@ function status() {
 
                   : `
                       <div class="empty">
-                        예약 없음
+                        <strong>등록된 예약 없음</strong><span>프로젝트실을 눌러 예약하세요.</span>
                       </div>
                     `
               }
 
             </div>
 
-          </article>
+          </button>
 
         `;
 
       }).join('')}
 
     </div>
-
+    ${notice()}
   `;
 
 
@@ -272,12 +245,6 @@ function status() {
       };
 
       card.onclick = openBooking;
-      card.onkeydown = event => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          openBooking();
-        }
-      };
     });
 
 }
@@ -353,11 +320,8 @@ function book() {
 
           <div class="field">
 
-            <label>
-              날짜
-            </label>
-
-            <input
+            <label for="날짜">날짜</label>
+<input id="날짜"
               name="date"
               type="date"
               value="${state.date}"
@@ -369,16 +333,13 @@ function book() {
 
           <div class="field">
 
-            <label>
-              용도
-            </label>
-
-            <select name="purpose">
+            <label for="용도">용도</label>
+<select id="용도" name="purpose">
 
               ${purposes.map(purpose => `
 
-                <option>
-                  ${purpose}
+                <option value="${purpose}">
+                  ${purposeLabels[purpose]}
                 </option>
 
               `).join('')}
@@ -396,11 +357,8 @@ function book() {
 
           <div class="field">
 
-            <label>
-              시작
-            </label>
-
-            <input
+            <label for="시작">시작</label>
+<input id="시작"
               name="start"
             type="time"
             value="09:00"
@@ -415,11 +373,8 @@ function book() {
 
           <div class="field">
 
-            <label>
-              종료
-            </label>
-
-            <input
+            <label for="종료">종료</label>
+<input id="종료"
               name="end"
             type="time"
             value="10:00"
@@ -437,11 +392,8 @@ function book() {
 
         <div class="field">
 
-          <label>
-            예약자 이름
-          </label>
-
-          <input
+          <label for="예약자이름">예약자 이름</label>
+<input id="예약자이름"
             name="name"
             maxlength="3"
             minlength="1"
@@ -453,11 +405,8 @@ function book() {
 
         <div class="field">
 
-          <label>
-            학번
-          </label>
-
-          <input
+          <label for="학번">학번</label>
+<input id="학번"
             name="studentId"
             inputmode="numeric"
             maxlength="20"
@@ -469,11 +418,8 @@ function book() {
 
         <div class="field">
 
-          <label>
-            메모 (선택)
-          </label>
-
-          <textarea
+          <label for="메모선택">메모 (선택)</label>
+<textarea id="메모선택"
             name="memo"
             maxlength="200"
           ></textarea>
@@ -483,11 +429,8 @@ function book() {
 
         <div class="field">
 
-          <label>
-            취소용 4자리 PIN
-          </label>
-
-          <input
+          <label for="취소용자리PIN">취소용 4자리 PIN</label>
+<input id="취소용자리PIN"
             name="pin"
             inputmode="numeric"
             pattern="[0-9]{4}"
@@ -512,7 +455,7 @@ function book() {
 
         <p>
 
-          <button class="primarybtn">
+          <button class="primarybtn" type="submit">
             예약 등록
           </button>
 
@@ -522,7 +465,7 @@ function book() {
       </form>
 
 
-      <div id="bookResult"></div>
+      ${notice()}<div id="bookResult" aria-live="polite"></div>
 
 
     </section>
@@ -577,7 +520,7 @@ async function submitBook(e) {
 
   e.preventDefault();
 
-  const submitButton = e.target.querySelector('button[type="submit"], button');
+  const submitButton = e.target.querySelector('button[type="submit"]');
   if (submitButton?.disabled) return;
   if (submitButton) submitButton.disabled = true;
 
@@ -594,13 +537,7 @@ async function submitBook(e) {
     document.querySelector('#bookResult');
 
 
-  out.innerHTML = `
-
-    <p class="small">
-      예약 가능 여부를 확인하고 있습니다…
-    </p>
-
-  `;
+  out.innerHTML = stateCard('예약을 등록하고 있습니다.', '잠시만 기다려 주세요.', 'loading');
 
 
   try {
@@ -641,13 +578,7 @@ async function submitBook(e) {
     console.error(err);
 
 
-    out.innerHTML = `
-
-      <p class="danger">
-        ${err.message}
-      </p>
-
-    `;
+    out.innerHTML = stateCard('요청을 완료하지 못했습니다.', err.message, 'error');
 
   } finally {
 
@@ -697,11 +628,8 @@ function mine() {
 
         <div class="field">
 
-          <label>
-            학번
-          </label>
-
-          <input
+          <label for="학번">학번</label>
+<input id="학번"
             name="studentId"
             required
           >
@@ -711,11 +639,8 @@ function mine() {
 
         <div class="field">
 
-          <label>
-            4자리 PIN
-          </label>
-
-          <input
+          <label for="자리PIN">4자리 PIN</label>
+<input id="자리PIN"
             name="pin"
             inputmode="numeric"
             pattern="[0-9]{4}"
@@ -734,7 +659,7 @@ function mine() {
       </form>
 
 
-      <div id="mineResult"></div>
+      ${notice()}<div id="mineResult" aria-live="polite"></div>
 
 
     </section>
@@ -777,6 +702,8 @@ async function lookup(e) {
     document.querySelector('#mineResult');
 
 
+  out.innerHTML = stateCard('예약을 조회하고 있습니다.', '잠시만 기다려 주세요.', 'loading');
+
   try {
 
     const result =
@@ -793,11 +720,7 @@ async function lookup(e) {
 
           <article class="card">
 
-            <b>
-              ${item.room}호
-              ·
-              ${item.start.slice(0, 10)}
-            </b>
+            <b>프로젝트실 ${escapeHtml(item.room)}</b><p>${fmt(item.start.slice(0, 10))}</p>
 
 
             <p>
@@ -808,13 +731,14 @@ async function lookup(e) {
 
               ·
 
-              ${item.purpose}
+              ${escapeHtml(purposeLabels[item.purpose] || item.purpose)}
 
             </p>
 
 
+            <p class="small">예약번호: ${escapeHtml(item.reservationId)}</p>
             <p class="small">
-              ${item.memo || ''}
+              ${escapeHtml(item.memo || '')}
             </p>
 
 
@@ -865,13 +789,7 @@ async function lookup(e) {
 
     } else {
 
-      out.innerHTML = `
-
-        <p class="empty">
-          예약 내역이 없습니다.
-        </p>
-
-      `;
+      out.innerHTML = stateCard('예약 내역이 없습니다.', '입력한 학번과 PIN을 확인해 주세요.');
 
     }
 
@@ -880,13 +798,7 @@ async function lookup(e) {
     console.error(err);
 
 
-    out.innerHTML = `
-
-      <p class="danger">
-        ${err.message}
-      </p>
-
-    `;
+    out.innerHTML = stateCard('요청을 완료하지 못했습니다.', err.message, 'error');
 
   }
 
@@ -963,10 +875,8 @@ async function load() {
     .querySelectorAll('[data-tab]')
     .forEach(button => {
 
-      button.classList.toggle(
-        'active',
-        button.dataset.tab === state.tab
-      );
+      button.classList.toggle('active', button.dataset.tab === state.tab);
+      button.setAttribute('aria-current', button.dataset.tab === state.tab ? 'page' : 'false');
 
     });
 
@@ -974,12 +884,7 @@ async function load() {
   if (state.tab === 'status') {
 
     const main = document.querySelector('.main');
-    main.innerHTML = `
-      <section class="card hero">
-        <h1>프로젝트실 예약 현황</h1>
-        <p>예약 현황을 불러오는 중입니다…</p>
-      </section>
-    `;
+    main.innerHTML = stateCard('예약 현황을 불러오고 있습니다.', '잠시만 기다려 주세요.', 'loading');
 
     try {
 
@@ -1000,8 +905,10 @@ async function load() {
       );
 
 
-      state.rows = [];
-
+      if (version !== state.loadVersion || state.tab !== 'status') return;
+      main.innerHTML = stateCard('예약 현황을 불러오지 못했습니다.', err.message, 'error') + '<button class="secondary" id="retry">다시 시도</button>';
+      document.querySelector('#retry').onclick = load;
+      return;
     }
 
     if (version !== state.loadVersion || state.tab !== 'status') return;
