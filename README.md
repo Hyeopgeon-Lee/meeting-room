@@ -20,3 +20,9 @@ Apps Script 프로젝트의 Script Properties에 `SHEET_ID`를 설정하고 `ini
 ## GitHub Pages
 
 저장소 Settings → Pages에서 `main` 브랜치의 root를 배포 대상으로 선택합니다. 사용자 도메인을 쓸 때는 Pages의 Custom domain에 `room.k-bigdata.kr`을 입력하고 DNS에 CNAME `room → hyeopgeon-lee.github.io`를 설정합니다.
+
+## 개인정보 최소화
+
+공개 예약 현황 API는 프로젝트실, 시작·종료 시각, 사용 목적만 반환합니다. 예약자 이름·학번·메모·예약번호는 공개 현황에서 반환하지 않습니다. 본인의 상세 예약과 예약번호는 학번+PIN으로 `findReservation`을 호출했을 때만 확인합니다.
+
+`apps-script/Code.gs`를 변경한 뒤에는 Apps Script의 **배포 관리 → 새 버전 → 배포**가 필요합니다. GitHub Pages 배포만으로 GAS 백엔드 코드는 갱신되지 않습니다.
