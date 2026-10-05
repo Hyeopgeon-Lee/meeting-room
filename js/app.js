@@ -68,16 +68,18 @@ function shell() {
   app.innerHTML = `
     <a class="skip-link" href="#main">본문으로 건너뛰기</a>
     <header class="top"><div class="topin">
-      <a class="portal-link" href="https://portal.k-bigdata.kr/">← 통합 서비스 포털</a>
-      <div class="brand-row"><span class="brand-icon">${icon('room')}</span><div><div class="eyebrow">빅데이터소프트웨어공학과</div><h1 class="brand">프로젝트실 예약</h1></div></div>
-      <p class="header-description">8318 · 8319 프로젝트실 예약 및 이용 현황</p>
+      <a class="service-brand" href="./" aria-label="프로젝트실 예약 홈">
+        <span class="portal-mark" aria-hidden="true"><span></span></span>
+        <span class="service-brand-copy"><strong>빅데이터소프트웨어공학과</strong><small>프로젝트실 예약</small></span>
+      </a>
+      <div class="top-actions"><a class="portal-link" href="https://portal.k-bigdata.kr/">통합 포털 ↗</a></div>
     </div></header>
-    <main class="main" id="main"></main>
     <nav class="nav" aria-label="프로젝트실 메뉴"><div class="navin">
       <button data-tab="status">${icon('room')}<span>현황</span></button>
       <button data-tab="book">${icon('book')}<span>예약하기</span></button>
       <button data-tab="mine">${icon('mine')}<span>내 예약</span></button>
     </div></nav>
+    <main class="main" id="main"></main>
   `;
 
 
