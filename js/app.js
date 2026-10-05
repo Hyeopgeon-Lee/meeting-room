@@ -193,8 +193,8 @@ function status() {
                           ${fmtTime(item.end)}
                         </span>
 
-                        <span class="reservation-name" title="예약자 이름">
-                          ${escapeHtml(shortName(item.name))}<small class="purpose">${escapeHtml(purposeLabels[item.purpose] || item.purpose)}</small>
+                        <span class="reservation-name" title="예약 정보">
+                          예약됨<small class="purpose">${escapeHtml(purposeLabels[item.purpose] || item.purpose)}</small>
                         </span>
 
                       </div>
