@@ -17,6 +17,12 @@ GitHub Pages 정적 프론트엔드와 Google Apps Script JSON API를 연결한 
 
 Apps Script 프로젝트의 Script Properties에 `SHEET_ID`를 설정하고 `initializeSystem`을 한 번 실행한 뒤, 웹 앱을 새 버전으로 배포합니다. 현재 API 배포 주소는 `https://script.google.com/macros/s/AKfycbxyQB19x1W4nrUAKnBV5lnKaChcd95RFquNVjFW0gH-s5mL0V4G58aA59phZ6wqCWY2fw/exec`입니다. API는 `getReservations`, `checkAvailability`, `createReservation`, `findReservation`, `cancelReservation`을 제공합니다. 예약 원장은 `예약API` 시트에 `예약번호, 프로젝트실, 시작, 종료, 예약자, 학번, 용도, 메모, PIN해시, 상태, 이벤트ID, 생성일시, 취소일시` 순서로 저장됩니다.
 
+## Apps Script 자동배포
+
+GitHub의 `apps-script/`를 Apps Script 원본 소스로 사용하며, GAS 관련 변경이 `main`에 반영되면 GitHub Actions가 보안 회귀 테스트 후 clasp로 기존 Web App 배포를 갱신할 수 있습니다.
+
+최초 1회 GitHub Actions Secret 3개 설정이 필요합니다. 자세한 절차는 [GAS_AUTO_DEPLOY](docs/GAS_AUTO_DEPLOY.md)를 참고합니다.
+
 ## GitHub Pages
 
 저장소 Settings → Pages에서 `main` 브랜치의 root를 배포 대상으로 선택합니다. 사용자 도메인을 쓸 때는 Pages의 Custom domain에 `room.k-bigdata.kr`을 입력하고 DNS에 CNAME `room → hyeopgeon-lee.github.io`를 설정합니다.
