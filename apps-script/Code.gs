@@ -1,8 +1,10 @@
 const CONFIG={rooms:['8318','8319'],open:9,close:22,maxMinutes:180,tz:'Asia/Seoul',sheetName:'예약API'};
 const HEADERS=['예약번호','프로젝트실','시작','종료','예약자','학번','용도','메모','PIN해시','상태','이벤트ID','생성일시','취소일시'];
 const PURPOSES=['학과 회의','수업/세미나','학생 모임','상담/면담','프로젝트','면접','기타'];
-function doGet(e){try{const a=e.parameter.action||'health';if(a==='getReservations')return out({ok:true,reservations:getReservations_(e.parameter.date)});if(a==='checkAvailability')return out(checkAvailability_(e.parameter));return out({ok:true,service:'meeting-room-api',rooms:CONFIG.rooms})}catch(err){return out({ok:false,error:err.message})}}
-function doPost(e){try{const b=JSON.parse(e.postData.contents||'{}'),a=b.action;if(a==='createReservation')return out({ok:true,...createReservation_(b)});if(a==='findReservation')return out({ok:true,reservations:findReservation_(b)});if(a==='cancelReservation')return out({ok:true,...cancelReservation_(b)});throw Error('지원하지 않는 요청입니다.')}catch(err){return out({ok:false,error:err.message})}}
+// Public legacy endpoints are retired. The original Sheet and internal helpers remain
+// intact for audit/recovery, but creating or finding bookings via PIN is disabled.
+function doGet(e){return out({ok:false,error:'MIGRATED_TO_PORTAL',portal:'https://portal.k-bigdata.kr/room.html'});}
+function doPost(e){return out({ok:false,error:'MIGRATED_TO_PORTAL',portal:'https://portal.k-bigdata.kr/room.html'});}
 function out(x){return ContentService.createTextOutput(JSON.stringify(x)).setMimeType(ContentService.MimeType.JSON)}
 function ss_(){const p=PropertiesService.getScriptProperties(),id=p.getProperty('SHEET_ID');if(!id)throw Error('SHEET_ID가 설정되지 않았습니다.');const book=SpreadsheetApp.openById(id);let s=book.getSheetByName(CONFIG.sheetName);if(!s)s=book.insertSheet(CONFIG.sheetName);if(s.getLastRow()===0)s.appendRow(HEADERS);return s}
 function rows_(){const s=ss_(),v=s.getDataRange().getValues();return v.slice(1).filter(r=>r[0]).map(r=>({id:String(r[0]),room:String(r[1]),start:r[2] instanceof Date?r[2]:new Date(r[2]),end:r[3] instanceof Date?r[3]:new Date(r[3]),name:String(r[4]),studentId:String(r[5]),purpose:String(r[6]),memo:String(r[7]),hash:String(r[8]),status:String(r[9]),eventId:String(r[10])}))}

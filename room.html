@@ -1,3 +1,29 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="robots" content="noindex, nofollow, noarchive"><meta name="theme-color" content="#0b1739"><title>프로젝트실 예약</title><link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="css/style.css?v=20261005-portal2"></head><body><div id="app"></div><script type="module" src="js/app.js?v=20261005-portal2"></script></body></html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0b1739">
+<meta http-equiv="refresh" content="1;url=https://portal.k-bigdata.kr/room.html">
+<title>프로젝트실 예약 · 통합 포털로 이동</title>
+<style>
+body{box-sizing:border-box;min-height:100vh;margin:0;padding:24px;display:grid;place-items:center;background:#f4f7fc;color:#243c58;font:16px/1.8 system-ui,-apple-system,'Segoe UI',sans-serif}
+main{max-width:550px;width:100%;box-sizing:border-box;text-align:center;border:1px solid #dce5ee;background:#fff;padding:35px 27px;border-radius:15px}
+h1{font-size:clamp(1.4rem,4.5vw,1.8rem);color:#163b62;margin-top:0}
+a{color:#174b88;font-weight:750}
+</style>
+<script>
+(()=>{'use strict';
+ const next=new URL('https://portal.k-bigdata.kr/room.html');
+ const room=new URL(location.href).searchParams.get('room');
+ if(room==='8318'||room==='8319')next.searchParams.set('room',room);
+ location.replace(next.href);
+})();
+</script>
+</head>
+<body><main>
+<h1>프로젝트실 예약이 통합 포털로 이전되었습니다</h1>
+<p>8318호·8319호 예약은 포털 로그인 후 이용할 수 있습니다.</p>
+<p><a href="https://portal.k-bigdata.kr/room.html">통합 포털의 프로젝트실 예약으로 이동</a></p>
+</main></body></html>
