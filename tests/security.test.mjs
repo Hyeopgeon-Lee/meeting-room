@@ -25,3 +25,16 @@ test('retrying cancelled reservation reconciles calendar without rewriting Sheet
 test('another student cannot cancel or remove calendar event',()=>{
  const {c,writes,deleted}=server();assert.throws(()=>c.cancelReservation_({reservationId:'TEST-ID',studentId:'OTHER',pin:'1234'}));assert.equal(deleted.length,0);assert.equal(writes.length,0);
 });
+
+
+test('legacy public API is disabled and old QR links preserve the room selection',()=>{
+ assert.match(source,/function doGet\(e\)\{return out\(\{ok:false,error:'MIGRATED_TO_PORTAL'/);
+ assert.match(source,/function doPost\(e\)\{return out\(\{ok:false,error:'MIGRATED_TO_PORTAL'/);
+ for(const page of ['index.html','room.html']){
+   const html=readFileSync(new URL('../'+page,import.meta.url),'utf8');
+   assert.match(html,/https:\/\/portal\.k-bigdata\.kr\/room\.html/);
+   assert.match(html,/location\.replace\(next\.href\)/);
+   assert.match(html,/room==='8318'\|\|room==='8319'/);
+   assert.doesNotMatch(html,/js\/app\.js/, 'legacy booking interface must no longer execute');
+ }
+});
